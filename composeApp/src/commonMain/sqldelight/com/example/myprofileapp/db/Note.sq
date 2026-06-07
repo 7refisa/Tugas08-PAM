@@ -1,0 +1,29 @@
+CREATE TABLE NoteEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    isFavorite INTEGER AS kotlin.Boolean NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL
+);
+
+selectAllNotes:
+SELECT * FROM NoteEntity;
+
+selectNoteById:
+SELECT * FROM NoteEntity WHERE id = ?;
+
+insertNote:
+INSERT INTO NoteEntity (title, content, isFavorite, createdAt)
+VALUES (?, ?, ?, ?);
+
+updateNote:
+UPDATE NoteEntity SET title = ?, content = ? WHERE id = ?;
+
+updateFavoriteStatus:
+UPDATE NoteEntity SET isFavorite = ? WHERE id = ?;
+
+deleteNote:
+DELETE FROM NoteEntity WHERE id = ?;
+
+searchNotes:
+SELECT * FROM NoteEntity WHERE title LIKE :query OR content LIKE :query;
