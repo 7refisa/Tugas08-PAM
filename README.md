@@ -1,4 +1,4 @@
-# Tugas Praktikum Minggu 7 — Local Data Storage
+# Tugas Praktikum Minggu 8 — Platform-Specific Features
 
 **Mata Kuliah:** IF25-22017 Pengembangan Aplikasi Mobile  
 **Program Studi:** Teknik Informatika — Institut Teknologi Sumatera  
@@ -6,136 +6,116 @@
 
 ---
 
-## Deskripsi
-
-Aplikasi **Notes App** berbasis Compose Multiplatform yang diperbarui untuk mendukung **Local Data Storage** (Penyimpanan Data Lokal) menggunakan **SQLDelight** untuk database SQLite (CRUD & Search) dan **Multiplatform Settings** untuk menyimpan preferensi pengguna (Tema & Urutan Catatan) secara persisten.
+## Deskripsi Tugas
+Melakukan upgrade pada **Notes App** berbasis Compose Multiplatform untuk mendukung fitur spesifik platform (*platform-specific features*) dengan arsitektur yang bersih (*clean separation*) menggunakan **Koin Dependency Injection** dan pola **expect/actual** untuk mengakses API native perangkat.
 
 ---
 
 ## Fitur yang Diimplementasikan
-
-- **SQLDelight Database (CRUD & Search):**
-  - **Tambah catatan:** Disimpan secara permanen ke database SQLite lokal.
-  - **Edit catatan:** Memperbarui data catatan yang sudah ada berdasarkan ID.
-  - **Hapus catatan:** Fitur baru untuk menghapus catatan langsung dari detail screen.
-  - **Toggle favorit:** Menyimpan status favorit secara persisten.
-  - **Fitur Pencarian (Search Bar):** Pencarian catatan secara reaktif berdasarkan judul atau konten langsung dari database.
-- **Multiplatform Settings (Preferensi Pengguna):**
-  - **Tema Dinamis:** Pilihan Mode Gelap (Dark Mode) persisten yang dapat diaktifkan di halaman Profil dan langsung diterapkan ke seluruh aplikasi.
-  - **Pengurutan (Sort Order):** Pilihan pengurutan catatan yang disimpan secara persisten:
-    - *By Date Newest First* (Terbaru Dahulu — default)
-    - *By Date Oldest First* (Terlama Dahulu)
-- **Arsitektur Offline-First & Reactive:**
-  - Menggunakan `Flow` dari SQLDelight dan Multiplatform Settings untuk sinkronisasi data UI secara *real-time* menggunakan `NotesViewModel` dan `ProfileViewModel`.
-
----
-
-## Struktur Folder
-
-```
-commonMain/kotlin/com/example/myprofileapp/
-│
-├── data/
-│   ├── local/
-│   │   ├── DatabaseDriverFactory.kt # Expect factory driver database
-│   │   ├── SettingsFactory.kt       # Expect factory Settings
-│   │   └── SettingsManager.kt       # Pengelola preferensi (Theme & Sort)
-│   │
-│   ├── Note.kt                      # Model data catatan
-│   └── NoteRepository.kt            # Repository terintegrasi database & seeding
-│
-├── viewmodel/
-│   ├── NotesViewModel.kt            # Mengelola StateFlow catatan, search, & sort
-│   └── ProfileViewModel.kt          # Mengelola StateFlow profil & theme
-│
-├── screens/
-│   ├── NoteListScreen.kt            # List catatan dengan Search Bar & Sort Dropdown
-│   ├── NoteDetailScreen.kt          # Detail catatan + Hapus + Favorit + Edit
-│   ├── AddEditNoteScreen.kt         # Form tambah & edit catatan
-│   ├── FavoritesScreen.kt           # Menampilkan list favorit secara reaktif
-│   └── ProfileScreen.kt             # Profil + Switch Mode Gelap (Persisten)
-│
-├── components/
-│   └── NoteComponents.kt            # Komponen UI reusable (NoteCard, TopBar, dll.)
-│
-├── utils/
-│   └── DateTimeUtils.kt             # Expect formatter tanggal multiplatform
-│
-└── App.kt                           # Root: Scaffold, NavHost, & MaterialTheme dinamis
-```
+1. **Koin Dependency Injection (DI):**
+   - Mengelola pembuatan dan resolusi seluruh dependensi secara modular (database driver, settings, repository, platform APIs, dan ViewModels).
+   - Inisialisasi Koin secara aman di setiap platform entry point (`MyApplication` di Android, `main()` di Desktop JVM, dan `MainViewController` di iOS).
+   - Resolusi ViewModel di Composable secara lifecycle-aware menggunakan block `viewModel { GlobalContext.get().get() }`.
+2. **Platform Info (DeviceInfo) — expect/actual:**
+   - Mendapatkan informasi nama perangkat, versi OS, dan versi aplikasi.
+   - **Android:** Menggunakan `android.os.Build`.
+   - **JVM (Desktop):** Menggunakan System properties (`os.name` & `os.version`).
+   - **iOS:** Menggunakan `UIDevice.currentDevice`.
+3. **Network Connection Monitor (NetworkMonitor) — expect/actual:**
+   - Memonitor status internet perangkat secara real-time dan reaktif.
+   - Menampilkan banner **🔌 Sedang Offline** secara dinamis menggunakan `AnimatedVisibility` di layar utama (`NoteListScreen`) saat koneksi terputus.
+4. **Battery Status (BatteryInfo) — expect/actual [BONUS +10%]:**
+   - Memonitor level baterai (persentase) dan status pengisian daya (*charging*).
+   - Menampilkan detail baterai beserta indikator charging secara langsung di layar **Profil**.
 
 ---
 
-## Skema Database (SQLDelight)
+## Diagram Arsitektur (Koin DI & Expect/Actual)
 
-Skema tabel didefinisikan dalam file [Note.sq](file:///composeApp/src/commonMain/sqldelight/com/example/myprofileapp/db/Note.sq):
+```mermaid
+graph TD
+    subgraph commonMain [commonMain]
+        App[App.kt] --> VM[Notes/Profile ViewModel]
+        VM --> Repo[NoteRepository]
+        Repo --> DB[NotesDatabase]
+        
+        %% Expect declarations
+        ExpectDevice[expect class DeviceInfo]
+        ExpectNet[expect class NetworkMonitor]
+        ExpectBat[expect class BatteryInfo]
+        
+        KoinCommon[Koin commonModule]
+    end
 
-```sql
-CREATE TABLE NoteEntity (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    isFavorite INTEGER AS kotlin.Boolean NOT NULL DEFAULT 0,
-    createdAt INTEGER NOT NULL
-);
-```
+    subgraph androidMain [androidMain]
+        AppAndroid[MyApplication / MainActivity]
+        ActualDeviceAndroid[actual class DeviceInfo]
+        ActualNetAndroid[actual class NetworkMonitor]
+        ActualBatAndroid[actual class BatteryInfo]
+        KoinAndroid[platformModule Android]
+    end
 
----
+    subgraph jvmMain [jvmMain]
+        AppJVM[main.kt]
+        ActualDeviceJVM[actual class DeviceInfo]
+        ActualNetJVM[actual class NetworkMonitor]
+        ActualBatJVM[actual class BatteryInfo]
+        KoinJVM[platformModule JVM]
+    end
 
-## Passing Arguments & Routing
+    subgraph iosMain [iosMain]
+        AppiOS[MainViewController]
+        ActualDeviceiOS[actual class DeviceInfo]
+        ActualNetiOS[actual class NetworkMonitor]
+        ActualBatios[actual class BatteryInfo]
+        KoiniOS[platformModule iOS]
+    end
 
-| Route | Argument | Tipe | Keterangan |
-|-------|----------|------|------------|
-| `note_detail/{noteId}` | `noteId` | `NavType.LongType` | ID catatan (dari database) yang ditampilkan |
-| `edit_note/{noteId}` | `noteId` | `NavType.LongType` | ID catatan (dari database) yang diedit |
+    %% Wiring expect/actual
+    ExpectDevice -.-> ActualDeviceAndroid
+    ExpectDevice -.-> ActualDeviceJVM
+    ExpectDevice -.-> ActualDeviceiOS
 
----
+    ExpectNet -.-> ActualNetAndroid
+    ExpectNet -.-> ActualNetJVM
+    ExpectNet -.-> ActualNetiOS
 
-## Screenshot & Demo
+    ExpectBat -.-> ActualBatAndroid
+    ExpectBat -.-> ActualBatJVM
+    ExpectBat -.-> ActualBatios
 
-*(Akan ditambahkan dokumentasi/screenshot/video demonstrasi oleh pengguna)*
-
----
-
-## Teknologi & Library Utama
-
-| Komponen | Library |
-|----------|---------|
-| **UI Framework** | Compose Multiplatform |
-| **Navigasi** | `org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10` |
-| **Database Lokal** | `app.cash.sqldelight:runtime:2.0.1` |
-| **Database Driver** | Android Driver, SQLite JDBC Driver (JVM), Native Driver (iOS) |
-| **Key-Value Settings**| `com.russhwolf:multiplatform-settings:1.1.1` (FlowSettings) |
-| **State Management** | Kotlin Coroutines Flows & MVVM ViewModels |
-| **Target Platform** | Android |
-
----
-
-## Dependency Baru yang Ditambahkan
-
-```kotlin
-// composeApp/build.gradle.kts
-plugins {
-    alias(libs.plugins.sqldelight)
-    alias(libs.plugins.kotlinSerialization)
-}
-
-dependencies {
-    // SQLDelight
-    implementation(libs.sqldelight.runtime)
-    implementation(libs.sqldelight.coroutines)
-    
-    // Multiplatform Settings
-    implementation(libs.multiplatformSettings)
-    implementation(libs.multiplatformSettings.coroutines)
-}
+    %% DI Resolution
+    KoinCommon --> VM
+    KoinCommon --> Repo
+    KoinAndroid --> KoinCommon
+    KoinJVM --> KoinCommon
+    KoiniOS --> KoinCommon
 ```
 
 ---
 
-## Cara Menjalankan
+## Tampilan Aplikasi (Screenshots)
 
-1. Clone repository ini
-2. Buka dengan Android Studio Koala atau yang lebih baru
-3. Sync Gradle (SQLDelight akan otomatis membuat interface database)
-4. Jalankan di emulator atau device Android (min. API 26)
+*Silakan masukkan screenshot tampilan aplikasi Anda di bawah ini:*
+
+### 1. Device Info & Battery Status (Profile Screen)
+<!-- SILAKAN MASUKKAN GAMBAR SCREENSHOT DEVICE INFO & BATERAI DI SINI -->
+*(Contoh format: `![Device Info](path/to/screenshot_profile.png)`)*
+
+### 2. Network Indicator Banner (Offline Banner)
+<!-- SILAKAN MASUKKAN GAMBAR SCREENSHOT BANNER OFFLINE DI SINI -->
+*(Contoh format: `![Offline Banner](path/to/screenshot_offline.png)`)*
+
+---
+
+## Video Demonstrasi Pengerjaan
+
+*Silakan masukkan link/embed video demonstrasi (durasi ~45 detik) di bawah ini:*
+
+<!-- SILAKAN MASUKKAN LINK VIDEO DEMO DI SINI (Google Drive/YouTube/GitHub Video) -->
+- **Link Video Demo:** [Tonton Video Demo di Sini](TULIS_LINK_VIDEO_DI_SINI)
+
+*Video mendemonstrasikan:*
+1. Kelancaran Dependency Injection (DI) via Koin.
+2. Tampilan info perangkat & status baterai di menu Profil.
+3. Fungsionalitas network status indicator (banner muncul saat Airplane Mode aktif / Wi-Fi mati, dan hilang saat online kembali).
