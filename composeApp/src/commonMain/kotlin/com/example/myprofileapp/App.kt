@@ -13,14 +13,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myprofileapp.navigation.BottomNavItem
+import com.example.myprofileapp.navigation.EditNoteRoute
+import com.example.myprofileapp.navigation.NoteDetailRoute
 import com.example.myprofileapp.navigation.Screen
 import com.example.myprofileapp.screens.AddNoteScreen
 import com.example.myprofileapp.screens.EditNoteScreen
@@ -90,7 +91,7 @@ fun AppNavigation() {
             composable(route = Screen.NoteList.route) {
                 NoteListScreen(
                     onNoteClick = { noteId ->
-                        navController.navigate(Screen.NoteDetail.createRoute(noteId))
+                        navController.navigate(NoteDetailRoute(noteId))
                     },
                     onAddClick = {
                         navController.navigate(Screen.AddNote.route)
@@ -102,7 +103,7 @@ fun AppNavigation() {
             composable(route = Screen.Favorites.route) {
                 FavoritesScreen(
                     onNoteClick = { noteId ->
-                        navController.navigate(Screen.NoteDetail.createRoute(noteId))
+                        navController.navigate(NoteDetailRoute(noteId))
                     }
                 )
             }
@@ -119,39 +120,23 @@ fun AppNavigation() {
                 )
             }
 
-            // NOTE DETAIL
-            composable(
-                route     = Screen.NoteDetail.route,
-                arguments = listOf(
-                    navArgument("noteId") {
-                        type = NavType.LongType
-                    }
-                )
-            ) { backStackEntry ->
-                val noteId = backStackEntry.arguments?.getLong("noteId") ?: 0L
-
+            // NOTE DETAIL — type-safe navigation
+            composable<NoteDetailRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<NoteDetailRoute>()
                 NoteDetailScreen(
-                    noteId      = noteId,
+                    noteId      = route.noteId,
                     onBack      = { navController.popBackStack() },
                     onEditClick = { id ->
-                        navController.navigate(Screen.EditNote.createRoute(id))
+                        navController.navigate(EditNoteRoute(id))
                     }
                 )
             }
 
-            // EDIT NOTE
-            composable(
-                route     = Screen.EditNote.route,
-                arguments = listOf(
-                    navArgument("noteId") {
-                        type = NavType.LongType
-                    }
-                )
-            ) { backStackEntry ->
-                val noteId = backStackEntry.arguments?.getLong("noteId") ?: 0L
-
+            // EDIT NOTE — type-safe navigation
+            composable<EditNoteRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<EditNoteRoute>()
                 EditNoteScreen(
-                    noteId = noteId,
+                    noteId = route.noteId,
                     onBack = { navController.popBackStack() }
                 )
             }

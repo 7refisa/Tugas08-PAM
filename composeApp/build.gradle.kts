@@ -50,12 +50,13 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(compose.materialIconsExtended)
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
-            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta01")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0-beta01")
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
             implementation(libs.multiplatformSettings)
             implementation(libs.multiplatformSettings.coroutines)
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
