@@ -87,7 +87,7 @@ fun AppNavigation() {
         NavHost(
             navController    = navController,
             startDestination = Screen.NoteList.route,
-            modifier         = Modifier.padding(innerPadding)
+            modifier         = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         ) {
 
             // TAB 1 — NoteList
