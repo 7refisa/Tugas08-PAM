@@ -11,6 +11,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -84,7 +86,8 @@ fun AppNavigation() {
 
         NavHost(
             navController    = navController,
-            startDestination = Screen.NoteList.route
+            startDestination = Screen.NoteList.route,
+            modifier         = Modifier.padding(innerPadding)
         ) {
 
             // TAB 1 — NoteList
