@@ -95,27 +95,11 @@ graph TD
 ---
 
 ## Tampilan Aplikasi (Screenshots)
-
-*Silakan masukkan screenshot tampilan aplikasi Anda di bawah ini:*
-
-### 1. Device Info & Battery Status (Profile Screen)
-<!-- SILAKAN MASUKKAN GAMBAR SCREENSHOT DEVICE INFO & BATERAI DI SINI -->
-*(Contoh format: `![Device Info](path/to/screenshot_profile.png)`)*
-
-### 2. Network Indicator Banner (Offline Banner)
-<!-- SILAKAN MASUKKAN GAMBAR SCREENSHOT BANNER OFFLINE DI SINI -->
-*(Contoh format: `![Offline Banner](path/to/screenshot_offline.png)`)*
+| Network Indicator Banner | Device Info & Battery Status |
+| --- | --- |
+| <img width="1080" height="2400" alt="Screenshot_20260610_181825" src="https://github.com/user-attachments/assets/d8446423-2701-4ef7-8380-a3e044e7ee7b" /> | <img width="1080" height="2400" alt="Screenshot_20260610_181848" src="https://github.com/user-attachments/assets/efd92ce7-95d1-4c22-8ee9-96a9ab380be7" /> |
 
 ---
 
-## Video Demonstrasi Pengerjaan
-
-*Silakan masukkan link/embed video demonstrasi (durasi ~45 detik) di bawah ini:*
-
-<!-- SILAKAN MASUKKAN LINK VIDEO DEMO DI SINI (Google Drive/YouTube/GitHub Video) -->
-- **Link Video Demo:** [Tonton Video Demo di Sini](TULIS_LINK_VIDEO_DI_SINI)
-
-*Video mendemonstrasikan:*
-1. Kelancaran Dependency Injection (DI) via Koin.
-2. Tampilan info perangkat & status baterai di menu Profil.
-3. Fungsionalitas network status indicator (banner muncul saat Airplane Mode aktif / Wi-Fi mati, dan hilang saat online kembali).
+## Video Demonstrasi
+https://github.com/user-attachments/assets/64e04158-38e0-43bd-afaf-235ac2d2d6ab
